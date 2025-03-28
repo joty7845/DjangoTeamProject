@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<main class="mt-5 pt-4">
+  <div class="container dark-grey-text mt-5">
+
+    <!-- Product Detail -->
+    <div class="row wow fadeIn">
+      <div class="col-md-6 mb-4">
+        <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Products/14.jpg" class="img-fluid" alt="">
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="p-4">
+          <div class="mb-3">
+            <a href="">
+              <span class="badge purple mr-1">{{ object.get_category_display }}</span>
+            </a>
+          </div>
+
+          <p class="lead">
+            {% if object.discount_price %}
+              <span class="mr-1"><del>¥{{ object.price }}</del></span>
+              <span>¥{{ object.discount_price }}</span>
+            {% else %}
+              <span>¥{{ object.price }}</span>
+            {% endif %}
+          </p>
+
+          <p class="lead font-weight-bold">Description</p>
+          <p>{{ object.description }}</p>
+
+          <a href="{{ object.get_add_to_cart_url }}" class="btn btn-primary btn-md my-0 p">
+            Add to Cart <i class="fas fa-shopping-cart ml-1"></i>
+          </a>
+          <a href="{{ object.get_remove_from_cart_url }}" class="btn btn-danger btn-md my-0 p">
+            Remove from Cart
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Comment Section -->
+    <div class="row">
+      <div class="col-md-12">
+        <h4 class="mt-4">Comments</h4>
+
+        {% for comment in page_obj %}
+          <div class="mb-3 p-3 border rounded bg-light">
+            <div class="d-flex align-items-center mb-2">
+              {% if comment.user.profile.avatar %}
+                <img src="{{ comment.user.profile.avatar.url }}" class="rounded-circle mr-2" style="width:40px; height:40px;">
+              {% else %}
+                <img src="https://via.placeholder.com/40" class="rounded-circle mr-2" alt="No avatar">
+              {% endif %}
+              <div>
+                <strong>{{ comment.user.username }}</strong><br>
+                <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+              </div>
+            </div>
+
+            <p>{{ comment.content }}</p>
+
+            {% if user.is_authenticated %}
+              {% if user.is_superuser %}
+                <form action="{% url 'core:delete-comment' comment.id %}" method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Are you sure you want to delete this comment?');">
+                    Delete
+                  </button>
+                </form>
+              {% elif user.id == comment.user.id %}
+                <form action="{% url 'core:delete-comment' comment.id %}" method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Are you sure you want to delete this comment?');">
+                    Delete
+                  </button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </div>
+        {% empty %}
+          <p>No comments yet. Be the first to comment!</p>
+        {% endfor %}
+
+        <!-- Pagination -->
+        <nav>
+          <ul class="pagination">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+              </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+              <a class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a>
+            </li>
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+
+        <!-- Comment Form -->
+        {% if user.is_authenticated %}
+          <h5 class="mt-4">Leave a Comment</h5>
+          <p>Commenting as <strong>{{ user.username }}</strong>:</p>
+          <form method="post">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit" class="btn btn-primary">Post Comment</button>
+          </form>
+        {% else %}
+          <p class="mt-4">Please <a href="{% url 'account_login' %}">log in</a> to post a comment.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</main>
+
+{% endblock content %}
+
+
+
+
+
